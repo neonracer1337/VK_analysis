@@ -1,0 +1,81 @@
+Страница ВК: https://vk.com/pognalishow
+
+Запросы:
+
+----------------------------------------------------------------------
+
+Запрос на вычисление влияния времени суток на количество лайков:
+
+SELECT 
+  CASE 
+    WHEN DATE_PART('hour', post_date) BETWEEN 6 AND 12 THEN 'Утро'
+    WHEN DATE_PART('hour', post_date) BETWEEN 12 AND 18 THEN 'День'
+    WHEN DATE_PART('hour', post_date) BETWEEN 18 AND 24 THEN 'Вечер'
+    ELSE 'Ночь'
+  END AS time_of_day,
+  AVG(likes_count) AS avg_likes
+FROM posts
+GROUP BY time_of_day
+ORDER BY avg_likes DESC;
+
+Результат:
+time_of_day	avg_likes
+"Утро"		"34643.777777777778"
+"День"		"26925.739413680782"
+"Вечер"		"23697.283870967742"
+"Ночь"		"20164.131147540984"
+
+Больше всего лайков получают утренние посты
+
+----------------------------------------------------------------------
+
+Запрос на вычисление влияния дня недели на количество лайков: 
+
+SELECT 
+  TO_CHAR(post_date, 'Day') AS weekday,
+  AVG(likes_count) AS avg_likes
+FROM posts
+GROUP BY TO_CHAR(post_date, 'Day')
+ORDER BY avg_likes DESC
+
+Результат:
+
+weekday		avg_likes
+"Sunday   "	"33783.737226277372"
+"Wednesday"	"31320.448275862069"
+"Thursday "	"30606.681159420290"
+"Monday   "	"29110.062500000000"
+"Saturday "	"28481.270833333333"
+"Friday   "	"27816.718954248366"
+"Tuesday  "	"26990.690647482014"
+
+В воскресенье посты набирают больше всего лайков
+
+----------------------------------------------------------------------
+
+Запрос на вычисление влияния промежутка между постами на количество лайков
+
+SELECT 
+  CASE 
+    WHEN post_interval < 6 THEN '< 6 часов'
+    WHEN post_interval BETWEEN 6 AND 12 THEN '6-12 часов'
+    WHEN post_interval BETWEEN 12 AND 24 THEN '12-24 часов'
+    ELSE '> 24 часов'
+  END AS interval,
+  AVG(likes_count) AS avg_likes
+FROM posts
+GROUP BY interval
+ORDER BY avg_likes DESC;
+
+Результат:
+
+interval	avg_likes
+"> 24 часов"	"30890.899262899263"
+"12-24 часов"	"30524.684350132626"
+"6-12 часов"	"26588.436363636364"
+"< 6 часов"	"25370.235849056604"
+
+Посты, выложенные через день и более от предыдущего, набирают больше лайков
+----------------------------------------------------------------------
+
+Таким образом, время суток влияет на количество лайков больше всего.
